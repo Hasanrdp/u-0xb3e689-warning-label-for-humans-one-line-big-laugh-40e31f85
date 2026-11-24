@@ -13,7 +13,7 @@
 // knows someone who dodges a feelings question), and the turn lands in
 // the final words.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 const LABEL =
@@ -31,3 +31,12 @@ if (LABEL.length > MAX_CHARS) {
 
 mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
 writeFileSync(OUTPUT_PATH, LABEL, "utf8");
+
+// Post-write read-back gate: verify the bytes on disk are exactly the label.
+const written = readFileSync(OUTPUT_PATH, "utf8");
+if (written !== LABEL) {
+  throw new Error("read-back mismatch: /output/entry.txt does not match LABEL");
+}
+if (written.length < 1 || written.length > MAX_CHARS) {
+  throw new Error(`read-back length ${written.length} outside 1-${MAX_CHARS} chars`);
+}
